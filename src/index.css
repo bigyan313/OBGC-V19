@@ -101,7 +101,7 @@ button:focus-visible {
   }
 }
 
-/* Wallet adapter overrides - Clean and elegant */
+/* Wallet adapter overrides - Clean and elegant with mobile support */
 .wallet-adapter-button {
   background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899) !important;
   border: 2px solid rgba(255, 255, 255, 0.2) !important;
@@ -110,6 +110,7 @@ button:focus-visible {
   transition: all 0.2s ease !important;
   font-size: 14px !important;
   padding: 8px 16px !important;
+  min-height: 44px !important; /* Better touch targets on mobile */
 }
 
 .wallet-adapter-button:hover {
@@ -158,6 +159,7 @@ button:focus-visible {
   margin-bottom: 12px !important;
   transition: all 0.3s ease !important;
   padding: 16px !important;
+  min-height: 60px !important; /* Better touch targets */
 }
 
 .wallet-adapter-modal-list-item:hover {
@@ -176,6 +178,7 @@ button:focus-visible {
   color: white !important;
   font-weight: 600 !important;
   border-radius: 12px !important;
+  min-height: 44px !important;
 }
 
 /* Phantom-specific styling */
@@ -202,13 +205,20 @@ button:focus-visible {
   }
   
   .wallet-adapter-modal-list-item {
-    padding: 12px !important;
-    margin-bottom: 8px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+    min-height: 64px !important; /* Even better touch targets on mobile */
   }
   
   .wallet-adapter-button {
-    font-size: 12px !important;
-    padding: 6px 12px !important;
+    font-size: 14px !important;
+    padding: 10px 16px !important;
+    min-height: 48px !important; /* Larger touch targets on mobile */
+  }
+  
+  .wallet-adapter-button-trigger {
+    min-height: 48px !important;
+    padding: 12px 16px !important;
   }
 }
 
@@ -222,6 +232,13 @@ button:focus-visible {
   button {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Larger touch targets for important buttons */
+  .wallet-adapter-button,
+  .wallet-adapter-button-trigger {
+    min-height: 48px !important;
+    padding: 12px 20px !important;
   }
 }
 
@@ -260,4 +277,34 @@ button:focus-visible {
   animation: shimmer 2s infinite linear;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   background-size: 200px 100%;
+}
+
+/* Mobile-specific wallet connection improvements */
+@media (max-width: 768px) {
+  /* Ensure wallet buttons are easily tappable */
+  .wallet-adapter-modal-list-item {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    -webkit-tap-highlight-color: rgba(168, 85, 247, 0.2);
+  }
+  
+  /* Better spacing for mobile modals */
+  .wallet-adapter-modal {
+    padding: 20px !important;
+  }
+  
+  /* Improved mobile button styling */
+  .wallet-adapter-button {
+    -webkit-tap-highlight-color: rgba(139, 92, 246, 0.3);
+    touch-action: manipulation; /* Prevent double-tap zoom */
+  }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .wallet-adapter-button,
+  .wallet-adapter-modal-list-item {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }

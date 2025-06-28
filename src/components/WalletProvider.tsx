@@ -13,6 +13,11 @@ interface Props {
   children: ReactNode;
 }
 
+// Mobile detection
+const isMobile = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
 export const WalletContextProvider: FC<Props> = ({ children }) => {
   // Use mainnet for production
   const network = WalletAdapterNetwork.Mainnet;

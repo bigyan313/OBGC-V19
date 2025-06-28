@@ -1,13 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { Wallet, LogOut, Shield, AlertCircle, CheckCircle } from 'lucide-react';
+import { Wallet, LogOut, Shield, AlertCircle, CheckCircle, Smartphone } from 'lucide-react';
 import { WalletPermissionModal } from './WalletPermissionModal';
+
+// Mobile detection utility
+const isMobile = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
+
+// Check if Phantom app is installed on mobile
+const isPhantomMobileInstalled = () => {
+  if (!isMobile()) return false;
+  
+  // Check if we're in the Phantom in-app browser
+  return !!(window as any).phantom?.solana?.isPhantom;
+};
+
+// Get Phantom mobile deep link
+const getPhantomMobileDeepLink = () => {
+  const currentUrl = encodeURIComponent(window.location.href);
+  return `phantom://browse/${currentUrl}?ref=${encodeURIComponent(window.location.origin)}`;
+};
 
 export const WalletButton: React.FC = () => {
   const { connected, disconnect, publicKey, connect, wallet, connecting } = useWallet();
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [showRejectionMessage, setShowRejectionMessage] = useState(false);
+  const [showMobileInstructions, setShowMobileInstructions] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
   const formatAddress = (address: string) => {
@@ -46,20 +66,58 @@ export const WalletButton: React.FC = () => {
   }, []);
 
   const handleConnectClick = () => {
-    // Check if Phantom is installed
-    if (typeof window !== 'undefined' && !window.phantom?.solana) {
-      // Phantom not detected, show installation prompt
-      const shouldInstall = window.confirm(
-        'Phantom wallet is required to participate in clicking. Would you like to install Phantom wallet?'
-      );
-      
-      if (shouldInstall) {
-        window.open('https://phantom.app/', '_blank');
+    const mobile = isMobile();
+    const phantomMobileInstalled = isPhantomMobileInstalled();
+    
+    console.log('Mobile:', mobile, 'Phantom installed:', phantomMobileInstalled);
+    
+    // Desktop flow
+    if (!mobile) {
+      // Check if Phantom is installed on desktop
+      if (typeof window !== 'undefined' && !window.phantom?.solana) {
+        const shouldInstall = window.confirm(
+          'Phantom wallet is required to participate in clicking. Would you like to install Phantom wallet?'
+        );
+        
+        if (shouldInstall) {
+          window.open('https://phantom.app/', '_blank');
+        }
+        return;
       }
+      
+      setShowPermissionModal(true);
       return;
     }
+    
+    // Mobile flow
+    if (phantomMobileInstalled) {
+      // We're already in Phantom mobile app
+      setShowPermissionModal(true);
+    } else {
+      // Show mobile instructions
+      setShowMobileInstructions(true);
+    }
+  };
 
-    setShowPermissionModal(true);
+  const handleMobileConnect = () => {
+    const deepLink = getPhantomMobileDeepLink();
+    
+    // Try to open Phantom app
+    window.location.href = deepLink;
+    
+    // Fallback: if app doesn't open in 2 seconds, redirect to app store
+    setTimeout(() => {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const storeUrl = isIOS 
+        ? 'https://apps.apple.com/app/phantom-solana-wallet/id1598432977'
+        : 'https://play.google.com/store/apps/details?id=app.phantom';
+      
+      if (confirm('Phantom app not found. Would you like to download it?')) {
+        window.open(storeUrl, '_blank');
+      }
+    }, 2000);
+    
+    setShowMobileInstructions(false);
   };
 
   const handlePermissionAccept = async () => {
@@ -102,6 +160,7 @@ export const WalletButton: React.FC = () => {
 
   const handlePermissionDecline = () => {
     setShowPermissionModal(false);
+    setShowMobileInstructions(false);
     setIsConnecting(false);
   };
 
@@ -126,6 +185,7 @@ export const WalletButton: React.FC = () => {
               <div className="flex items-center gap-1 text-xs text-purple-300">
                 <Wallet className="w-3 h-3" />
                 <span>Phantom</span>
+                {isMobile() && <Smartphone className="w-3 h-3" />}
               </div>
             </div>
           </div>
@@ -162,6 +222,7 @@ export const WalletButton: React.FC = () => {
             <>
               <Wallet className="w-4 h-4" />
               <span>Connect Phantom</span>
+              {isMobile() && <Smartphone className="w-3 h-3" />}
             </>
           )}
         </button>
@@ -179,6 +240,85 @@ export const WalletButton: React.FC = () => {
       <div className="hidden">
         <WalletMultiButton />
       </div>
+
+      {/* Mobile Instructions Modal */}
+      {showMobileInstructions && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-white/20 max-w-md w-full shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Smartphone className="w-8 h-8 text-blue-400" />
+                <h2 className="text-xl font-bold text-white">Mobile Wallet Connection</h2>
+              </div>
+              
+              <div className="space-y-4 text-slate-300">
+                <p className="text-sm">
+                  To connect your Phantom wallet on mobile, you have two options:
+                </p>
+                
+                <div className="space-y-3">
+                  <div className="bg-blue-500/10 rounded-lg p-3 border border-blue-500/20">
+                    <h3 className="font-semibold text-blue-400 mb-2">Option 1: Open in Phantom App</h3>
+                    <p className="text-xs text-blue-200 mb-3">
+                      Open this website directly in the Phantom mobile app browser for seamless connection.
+                    </p>
+                    <button
+                      onClick={handleMobileConnect}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                    >
+                      Open in Phantom App
+                    </button>
+                  </div>
+                  
+                  <div className="bg-purple-500/10 rounded-lg p-3 border border-purple-500/20">
+                    <h3 className="font-semibold text-purple-400 mb-2">Option 2: Use WalletConnect</h3>
+                    <p className="text-xs text-purple-200 mb-3">
+                      If you have Phantom installed, try connecting through the wallet adapter.
+                    </p>
+                    <button
+                      onClick={handlePermissionAccept}
+                      className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                    >
+                      Try WalletConnect
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="bg-orange-500/10 rounded-lg p-3 border border-orange-500/20">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-xs text-orange-200">
+                      <p className="font-semibold mb-1">Don't have Phantom?</p>
+                      <p>Download the Phantom app from your device's app store first.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handlePermissionDecline}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                    const storeUrl = isIOS 
+                      ? 'https://apps.apple.com/app/phantom-solana-wallet/id1598432977'
+                      : 'https://play.google.com/store/apps/details?id=app.phantom';
+                    window.open(storeUrl, '_blank');
+                  }}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors"
+                >
+                  Download Phantom
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <WalletPermissionModal
         isOpen={showPermissionModal}
