@@ -1,0 +1,57 @@
+Contact: mailto:bigyan.adhikari313@gmail.com
+
+
+# Security Policy for 1B Global Clicks - Solana MAINNET Application
+
+## Program Information
+Program ID: Gbfg24vZ7pfr9zZAixC4aXxt6JB5X1zYwSpQXBAvYL4t
+Network: Solana MAINNET
+Framework: Anchor (Rust-based smart contracts)
+Repository: https://github.com/bigyanadhikari/1b-global-clicks
+
+## Scope
+This security policy covers:
+- The deployed Anchor program on Solana MAINNET
+- The frontend web application
+- Smart contract interactions and wallet integrations
+- RPC endpoint configurations and security
+
+## Reporting Security Issues
+If you discover a security vulnerability, please report it to:
+- Email: bigyan.adhikari313@gmail.com
+- Subject: [SECURITY] 1B Global Clicks Vulnerability Report
+
+Please include:
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact assessment
+- Suggested mitigation (if any)
+
+## Response Timeline
+- Initial response: Within 24 hours
+- Status update: Within 72 hours
+- Resolution timeline: Depends on severity
+
+## Security Measures
+- All transactions are on Solana MAINNET blockchain
+- Only Phantom wallet integration for security
+- Rate limiting implemented in smart contract
+- Input validation and overflow protection
+- No private key storage or access
+- Open source codebase for transparency
+
+## Bug Bounty
+Currently no formal bug bounty program, but security researchers
+are acknowledged and appreciated for responsible disclosure.
+
+## Contact Information
+Maintainer: Bigyan Adhikari
+Email: bigyan.adhikari313@gmail.com
+GitHub: https://github.com/bigyanadhikari
+
+## Verification
+This file can be used for:
+- Solana program verification
+- Security audits
+- Responsible disclosure
+- Contact verification for blockchain explorers
